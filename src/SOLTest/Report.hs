@@ -13,6 +13,7 @@ module SOLTest.Report
 where
 
 import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import SOLTest.Types
 
 -- ---------------------------------------------------------------------------
@@ -55,14 +56,34 @@ buildReport discovered unexecuted mResults selected foundCount =
 --
 -- The @definitions@ list is used to look up each test's category and points.
 --
--- FLP: Implement this function. The following functions may (or may not) come in handy:
---      @Map.fromList@, @Map.foldlWithKey'@, @Map.empty@, @Map.lookup@, @Map.insertWith@,
---      @Map.map@, @Map.fromList@
 groupByCategory ::
   [TestCaseDefinition] ->
   Map String TestCaseReport ->
   Map String CategoryReport
-groupByCategory definitions results = undefined
+groupByCategory definitions results =
+  let addOne def acc = case Map.lookup (tcdName def) results of
+        Nothing -> acc -- test nema vysledok (nebol spusteny)
+        Just r -> Map.insertWith mergeCr (tcdCategory def) (singletonCr def r) acc
+
+      -- Vytvorenie CategoryReportu ked kategoria este neni v akumulatore
+      singletonCr def r =
+        let pts = tcdPoints def
+            passed = if tcrResult r == Passed then pts else 0
+         in CategoryReport
+              { crTotalPoints = pts,
+                crPassedPoints = passed,
+                crTestResults = Map.singleton (tcdName def) r
+              }
+
+      -- Zlucenie dvoch CategoryReportov, ked je kategoria uz v akumulatore
+      mergeCr new old =
+        CategoryReport
+          { crTotalPoints = crTotalPoints old + crTotalPoints new,
+            crPassedPoints = crPassedPoints old + crPassedPoints new,
+            crTestResults = Map.union (crTestResults old) (crTestResults new)
+          }
+   -- Prejde vsetky definicie a postupne bud pridava alebo vytvara kategorie 
+   in foldr addOne Map.empty definitions
 
 -- ---------------------------------------------------------------------------
 -- Statistics
@@ -70,7 +91,6 @@ groupByCategory definitions results = undefined
 
 -- | Compute the 'TestStats' from available information.
 --
--- FLP: Implement this function. You'll use @computeHistogram@ here.
 computeStats ::
   -- | Total @.test@ files found on disk.
   Int ->
@@ -81,7 +101,18 @@ computeStats ::
   -- | Category reports (Nothing in dry-run mode).
   Maybe (Map String CategoryReport) ->
   TestStats
-computeStats foundCount loadedCount selectedCount mCategoryResults = undefined
+computeStats foundCount loadedCount selectedCount mCategoryResults =
+  let 
+      kategorie = maybe [] Map.elems mCategoryResults
+      passed = sum (map passedCount kategorie)
+      hist = maybe emptyHistogram computeHistogram mCategoryResults
+   in TestStats
+        { tsFoundTestFiles = foundCount,
+          tsLoadedTests = loadedCount,
+          tsSelectedTests = selectedCount,
+          tsPassedTests = passed,
+          tsHistogram = hist
+        }
 
 -- ---------------------------------------------------------------------------
 -- Histogram
@@ -97,9 +128,31 @@ computeStats foundCount loadedCount selectedCount mCategoryResults = undefined
 -- of categories in each bin is accumulated. All ten bins are always present in
 -- the result, even if their count is 0.
 --
--- FLP: Implement this function.
 computeHistogram :: Map String CategoryReport -> Map String Int
-computeHistogram categories = undefined
+computeHistogram categories =
+  let -- Uspesnost kategorii, 0/0 je 0.0
+      rateOf cr =
+        let total = Map.size (crTestResults cr)
+            p = passedCount cr
+         in if total == 0
+              then 0.0
+              else fromIntegral p / fromIntegral total
+
+      -- Zvysi pocet v spravnon bine o 1
+      inc cr = Map.adjust (+ 1) (rateToBin (rateOf cr))
+   in foldr inc emptyHistogram (Map.elems categories)
+
+-- Pocet passed testov v kategorii
+passedCount :: CategoryReport -> Int
+passedCount cr = Map.size (Map.filter (\r -> tcrResult r == Passed) (crTestResults cr))
+
+-- Biny histogramu v poradi
+validBins :: [String]
+validBins = ["0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"]
+
+-- Default histogram
+emptyHistogram :: Map String Int
+emptyHistogram = Map.fromList [(b, 0) | b <- validBins]
 
 -- | Map a pass rate in @[0, 1]@ to a histogram bin key.
 --
