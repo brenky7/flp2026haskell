@@ -31,12 +31,19 @@ import SOLTest.Types
 --
 -- The union of @selected@ and @filteredOut@ always equals the input list.
 --
--- FLP: Implement this function using @matchesAny@ and @matchesCriterion@.
-filterTests ::
-  FilterSpec ->
-  [TestCaseDefinition] ->
+filterTests :: FilterSpec -> [TestCaseDefinition] ->
   ([TestCaseDefinition], [TestCaseDefinition])
-filterTests spec tests = undefined
+filterTests spec tests =
+  let useRegex = fsUseRegex spec
+      includes = fsIncludes spec
+      excludes = fsExcludes spec
+      -- Ziadne includes = kazdy test je selected 
+      -- Inak musi mat aspon jeden include matchnuty
+      isIncluded t = null includes || matchesAny useRegex includes t
+      -- Excludu je silnejsi ako include preto ak matchne exclude, test vypadne
+      keep t = isIncluded t && not (matchesAny useRegex excludes t)
+   -- filter pre selected a filteredOut
+   in (filter keep tests, filter (not . keep) tests) 
 
 -- | Check whether a test matches at least one criterion in the list.
 matchesAny :: Bool -> [FilterCriterion] -> TestCaseDefinition -> Bool
@@ -49,11 +56,20 @@ matchesAny useRegex criteria test =
 -- When @useRegex@ is 'True', the criterion value is treated as a POSIX
 -- regular expression matched against the relevant field(s).
 -- 
--- FLP: Implement this function. If you're not implementing the regex matching 
--- bonus extension, you can either remove the first argument and update the usages,
--- or you can simply ignore the value.
 matchesCriterion :: Bool -> TestCaseDefinition -> FilterCriterion -> Bool
-matchesCriterion useRegex test criterion = undefined
+matchesCriterion _useRegex test criterion =
+  let v = trimFilterId (filterCriterionValue criterion)
+      
+      -- any je najsilnejsie, matchuje prve
+      check (ByAny _)      = v == tcdName test 
+                             || v == tcdCategory test 
+                             || v `elem` tcdTags test
+                             
+      check (ByCategory _) = v == tcdCategory test
+      
+      check (ByTag _)      = v `elem` tcdTags test
+      
+   in check criterion
 
 -- | Trim leading and trailing whitespace from a filter identifier.
 trimFilterId :: String -> String
