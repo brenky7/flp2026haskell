@@ -12,9 +12,13 @@ import SOLTest.Parser
       parseHeaderLine,
       splitHeaderBody,
       ParsedHeader(phParserCodes, phDescription, phCategory, phTags,
-                   phWeight, phInterpreterCodes) )
+                   phWeight, phInterpreterCodes),
+      parseHeader,
+      parseTestFile )
 import SOLTest.Types
-    ( TestCaseType(Combined, ParseOnly, ExecuteOnly) )
+    ( TestCaseType(Combined, ParseOnly, ExecuteOnly),
+      TestCaseDefinition(..),
+      TestCaseFile(..) )
 import Test.QuickCheck
 
 -- ===========================================================================
