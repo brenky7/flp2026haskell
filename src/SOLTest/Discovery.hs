@@ -3,7 +3,8 @@ module SOLTest.Discovery (discoverTests) where
 
 import SOLTest.Types
 import System.Directory
-  ( doesFileExist,
+  ( doesDirectoryExist,  -- Pridal som import lebo si myslim ze to neni v scope
+    doesFileExist,      -- zadania implementovat rucne a doesFileExist tu uz bol
     listDirectory,
   )
 import System.FilePath (replaceExtension, takeBaseName, (</>))
@@ -14,15 +15,50 @@ import System.FilePath (replaceExtension, takeBaseName, (</>))
 -- Returns a list of 'TestCaseFile' records, one per @.test@ file found.
 -- The list is ordered by the file system traversal order (not sorted).
 --
--- FLP: Implement this function. The following functions may come in handy:
---      @doesDirectoryExist@, @takeExtension@, @forM@ or @mapM@,
---      @findCompanionFiles@ (below).
 discoverTests :: Bool -> FilePath -> IO [TestCaseFile]
 discoverTests recursive dir = do
   entries <- listDirectory dir
-  let fullPaths = map (dir </>) entries
-  -- ???
-  return [] -- replace [] with your list of discovered TestCaseFile
+  -- Skip skrytych veci
+  let visible = filter (not . isHidden) entries
+      fullPaths = map (dir </>) visible
+  -- Jeden krok pre jeden entry, vrati zoznam najdenych TestCaseFile
+  let handle path = do
+        isDir <- doesDirectoryExist path
+        if isDir
+          then
+            if recursive
+              then discoverTests True path
+              else return []
+          else
+            if fileExt path == ".test"
+              then do
+                tcf <- findCompanionFiles path
+                return [tcf]
+              else return []
+  -- Vysledky sa spoja dokopy, mapM je pre IO operacie
+  results <- mapM handle fullPaths
+  return (concat results)
+
+-- | Zisti ci je file/directory skryte
+isHidden :: FilePath -> Bool
+isHidden ('.' : _) = True
+isHidden _         = False
+
+-- | Vrati cast cesty po poslednej lomke = filename
+fileBase :: FilePath -> String
+fileBase = reverse . takeWhile (/= '/') . reverse
+
+-- | Vrati priponu suboru s bodkou
+fileExt :: FilePath -> String
+fileExt path =
+  let name           = fileBase path
+      -- Reverse lebo sa hlada posledna bodka
+      (extRev, rest) = break (== '.') (reverse name)
+   in case rest of
+        -- Bodka existuje a je nieco pred nou = pripona
+        '.' : beforeDot | not (null beforeDot) -> '.' : reverse extRev
+        -- Inak ziadna pripona
+        _                                      -> ""
 
 -- | Build a 'TestCaseFile' for a given @.test@ file path, checking for
 -- companion @.in@ and @.out@ files in the same directory.
