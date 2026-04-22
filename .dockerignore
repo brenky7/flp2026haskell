@@ -1,0 +1,27 @@
+# Tieto subory/adresare sa NIKDY nemaju dostat do Docker build kontextu —
+# buduju sa lokalne, maju obrovsku velkost a invalidovali by cache.
+
+# Cabal/GHC build artefakty (stovky MB, kompletne zbytocne v obraze).
+dist-newstyle/
+dist/
+.ghc.environment.*
+
+# IDE a editor veci
+.vscode/
+.idea/
+.claude/
+
+# Git veci — v obraze netreba
+.git/
+.gitignore
+
+# Docker-specificke
+Dockerfile
+.dockerignore
+
+# PDF zadanie a README — do obrazu netreba
+zadani.pdf
+
+# Editor swap files
+*.swp
+*~
