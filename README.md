@@ -9,6 +9,8 @@ Pridané importy:
 
 Pridané kvôli práci so systémovými adresármi. Iné som nič nepridával ani som nerobil zmeny v šablóne. Pred odovzdaním som iba nechal ormolu naformátovať projekt (podľa zadania) a to spravilo menšie úpravy aj v tvojom kóde. Zároveň som použil AI pre urobenie plánu práce a vysvetlenie pojmov na začiatku, viď export chatu v AI.md.
 
+Zároveň ešte v git histórii nájdeš runTests.sh. Tento skript som spravil pre jednoduché testovanie zadaní z IPP s mojim kontajnerom, ale potom som zistil že IPP zadania sa kontajnerizujú tak som to zmazal, verím že automatické testovanie tam máš aj tak vyriešené..
+
 ## Bonus
 
 Implementoval som bonusovú kontajnerizáciu s tromi stagmi podľa zadania.
