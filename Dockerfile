@@ -40,6 +40,7 @@ RUN apt-get update \
       diffutils \ 
       libgmp10 \
       libffi8 \
+      python3 \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
