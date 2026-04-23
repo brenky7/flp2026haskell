@@ -1,7 +1,4 @@
-# Tieto subory/adresare sa NIKDY nemaju dostat do Docker build kontextu —
-# buduju sa lokalne, maju obrovsku velkost a invalidovali by cache.
-
-# Cabal/GHC build artefakty (stovky MB, kompletne zbytocne v obraze).
+# Cabal/GHC build artefakty
 dist-newstyle/
 dist/
 .ghc.environment.*
@@ -11,7 +8,7 @@ dist/
 .idea/
 .claude/
 
-# Git veci — v obraze netreba
+# Git
 .git/
 .gitignore
 
