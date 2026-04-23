@@ -8,7 +8,7 @@ module SOLTest.Report
     groupByCategory,
     computeStats,
     computeHistogram,
-    rateToBin
+    rateToBin,
   )
 where
 
@@ -55,7 +55,6 @@ buildReport discovered unexecuted mResults selected foundCount =
 -- one per category.
 --
 -- The @definitions@ list is used to look up each test's category and points.
---
 groupByCategory ::
   [TestCaseDefinition] ->
   Map String TestCaseReport ->
@@ -82,15 +81,14 @@ groupByCategory definitions results =
             crPassedPoints = crPassedPoints old + crPassedPoints new,
             crTestResults = Map.union (crTestResults old) (crTestResults new)
           }
-   -- Prejde vsetky definicie a postupne bud pridava alebo vytvara kategorie 
-   in foldr addOne Map.empty definitions
+   in -- Prejde vsetky definicie a postupne bud pridava alebo vytvara kategorie
+      foldr addOne Map.empty definitions
 
 -- ---------------------------------------------------------------------------
 -- Statistics
 -- ---------------------------------------------------------------------------
 
 -- | Compute the 'TestStats' from available information.
---
 computeStats ::
   -- | Total @.test@ files found on disk.
   Int ->
@@ -102,8 +100,7 @@ computeStats ::
   Maybe (Map String CategoryReport) ->
   TestStats
 computeStats foundCount loadedCount selectedCount mCategoryResults =
-  let 
-      kategorie = maybe [] Map.elems mCategoryResults
+  let kategorie = maybe [] Map.elems mCategoryResults
       passed = sum (map passedCount kategorie)
       hist = maybe emptyHistogram computeHistogram mCategoryResults
    in TestStats
@@ -127,7 +124,6 @@ computeStats foundCount loadedCount selectedCount mCategoryResults =
 -- The rate is mapped to a bin key (@\"0.0\"@ through @\"0.9\"@) and the count
 -- of categories in each bin is accumulated. All ten bins are always present in
 -- the result, even if their count is 0.
---
 computeHistogram :: Map String CategoryReport -> Map String Int
 computeHistogram categories =
   let -- Uspesnost kategorii, 0/0 je 0.0

@@ -111,7 +111,7 @@ prop_statsPassedCountCorrect =
         expected =
           sum
             [ Map.size (Map.filter (\r -> tcrResult r == Passed) (crTestResults cr))
-              | cr <- Map.elems cats
+            | cr <- Map.elems cats
             ]
      in tsPassedTests stats === expected
 

@@ -18,11 +18,12 @@ where
 import Control.Exception (IOException, try)
 import Data.Maybe (fromMaybe)
 import SOLTest.Types
+import System.Directory (Permissions, doesFileExist, executable, getPermissions)
 import System.Exit (ExitCode (..))
 import System.IO (hClose, hPutStr)
 import System.IO.Temp (withSystemTempFile)
 import System.Process (proc, readCreateProcessWithExitCode)
-import System.Directory (Permissions, doesFileExist, executable, getPermissions)
+
 -- Opat pridane importy ako pri Discovery.hs
 
 -- ---------------------------------------------------------------------------
@@ -214,7 +215,7 @@ runDiffOnOutput iOut outFile =
     (exitCode, diffOut) <- runDiff tmpPath outFile
     case exitCode of
       ExitSuccess -> return (Passed, Nothing)
-      _           -> return (DiffFail, Just diffOut)
+      _ -> return (DiffFail, Just diffOut)
 
 -- | Ensure an executable path is provided and the file is executable,
 -- then run an action with it.  Returns 'Left' 'CannotExecute' if the

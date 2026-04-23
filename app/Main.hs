@@ -115,7 +115,7 @@ run opts = do
   let filterUnexecuted =
         Map.fromList
           [ (tcdName t, UnexecutedReason FilteredOut Nothing)
-            | t <- filteredOut
+          | t <- filteredOut
           ]
   let baseUnexecuted = Map.union parseUnexecuted filterUnexecuted
 

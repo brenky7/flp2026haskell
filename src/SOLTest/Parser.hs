@@ -79,19 +79,19 @@ emptyHeader =
 -- Pouzil som lines a unlines na pracu s riadkami, snad je to legalne
 splitHeaderBody :: String -> ([String], String)
 splitHeaderBody content =
-    let allLines      = lines content
-        (header, body)= splitHelper allLines
-    in (header, unlines body) -- tu sa vystup zo splitHelper iba spoji naspat do stringu
+  let allLines = lines content
+      (header, body) = splitHelper allLines
+   in (header, unlines body) -- tu sa vystup zo splitHelper iba spoji naspat do stringu
 
 -- Helper pre splitovanie, prechadza zoznam riadkov kym nenajde prazdny riadok
 -- Vrati riadky pred prazdnym a riadky po ako dvojicu
 splitHelper :: [String] -> ([String], [String])
 splitHelper [] = ([], [])
-splitHelper (x:xs)
-    | x == ""   = ([], xs)
-    | otherwise =
-        let (nextHeaders, finalBody) = splitHelper xs
-        in (x : nextHeaders, finalBody)
+splitHelper (x : xs)
+  | x == "" = ([], xs)
+  | otherwise =
+      let (nextHeaders, finalBody) = splitHelper xs
+       in (x : nextHeaders, finalBody)
 
 -- ---------------------------------------------------------------------------
 -- Header line parsing
@@ -102,13 +102,12 @@ splitHelper (x:xs)
 -- Returns 'Left' with an error message if the line has a known prefix but
 -- a malformed value (e.g. a non-integer weight). Lines with unrecognised
 -- prefixes are silently ignored, as the spec does not prohibit extra lines.
---
 parseHeaderLine :: ParsedHeader -> String -> Either String ParsedHeader
 parseHeaderLine hdr line
   | "*** " `isPrefixOf` line =
       let val = trim (drop 4 line)
        in Right hdr {phDescription = Just val}
-  -- takisto jak vyssie    
+  -- takisto jak vyssie
   | "+++ " `isPrefixOf` line =
       let val = trim (drop 4 line)
        in Right hdr {phCategory = Just val}
@@ -116,25 +115,24 @@ parseHeaderLine hdr line
   | "--- " `isPrefixOf` line =
       let val = trim (drop 4 line)
        in Right hdr {phTags = phTags hdr ++ [val]}
-  -- tu sa este parsuje a kontroluje cislo    
+  -- tu sa este parsuje a kontroluje cislo
   | ">>> " `isPrefixOf` line =
       let val = trim (drop 4 line)
           check [(w, "")] = Right hdr {phWeight = Just w}
-          check _         = Left ("Invalid weight: " ++ line)
+          check _ = Left ("Invalid weight: " ++ line)
        in check (reads val)
-  -- to iste ako vyssie, ale pre parser codes         
+  -- to iste ako vyssie, ale pre parser codes
   | "!C! " `isPrefixOf` line =
       let val = trim (drop 4 line)
           check [(c, "")] = Right hdr {phParserCodes = phParserCodes hdr ++ [c]}
-          check _         = Left ("Invalid parser code: " ++ line)
+          check _ = Left ("Invalid parser code: " ++ line)
        in check (reads val)
-  -- to iste ako vyssie, ale pre interpreter codes         
+  -- to iste ako vyssie, ale pre interpreter codes
   | "!I! " `isPrefixOf` line =
       let val = trim (drop 4 line)
           check [(c, "")] = Right hdr {phInterpreterCodes = phInterpreterCodes hdr ++ [c]}
-          check _         = Left ("Invalid interpreter code: " ++ line)
+          check _ = Left ("Invalid interpreter code: " ++ line)
        in check (reads val)
-           
   | otherwise = Right hdr -- unknown or comment line: skip
 
 -- | Parse all header lines into a 'ParsedHeader'.
@@ -225,7 +223,6 @@ parseTestFile tcf content = do
 -- For 'Combined' tests: if no @!C!@ codes were given, 'tcdExpectedParserExitCodes'
 -- is 'Nothing' (the parser must exit 0, which is implicit and not stored in the
 -- list); if @!C! 0@ was explicit, it is stored as @Just [0]@.
---
 buildExitCodes :: TestCaseType -> ParsedHeader -> (Maybe [Int], Maybe [Int])
 -- iba parser kody
 buildExitCodes ParseOnly hdr = (Just (phParserCodes hdr), Nothing)
@@ -236,7 +233,7 @@ buildExitCodes ExecuteOnly hdr = (Nothing, Just (phInterpreterCodes hdr))
 buildExitCodes Combined hdr =
   let pc = case phParserCodes hdr of
         [] -> Nothing
-        cs -> Just cs 
+        cs -> Just cs
    in (pc, Just (phInterpreterCodes hdr))
 
 -- ---------------------------------------------------------------------------

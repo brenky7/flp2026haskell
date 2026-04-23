@@ -3,8 +3,8 @@ module SOLTest.Discovery (discoverTests) where
 
 import SOLTest.Types
 import System.Directory
-  ( doesDirectoryExist,  -- Pridal som import lebo si myslim ze to neni v scope
-    doesFileExist,      -- zadania implementovat rucne a doesFileExist tu uz bol
+  ( doesDirectoryExist, -- Pridal som import lebo si myslim ze to neni v scope
+    doesFileExist, -- zadania implementovat rucne a doesFileExist tu uz bol
     listDirectory,
   )
 import System.FilePath (replaceExtension, takeBaseName, (</>))
@@ -14,7 +14,6 @@ import System.FilePath (replaceExtension, takeBaseName, (</>))
 -- When @recursive@ is 'True', subdirectories are searched recursively.
 -- Returns a list of 'TestCaseFile' records, one per @.test@ file found.
 -- The list is ordered by the file system traversal order (not sorted).
---
 discoverTests :: Bool -> FilePath -> IO [TestCaseFile]
 discoverTests recursive dir = do
   entries <- listDirectory dir
@@ -42,7 +41,7 @@ discoverTests recursive dir = do
 -- | Zisti ci je file/directory skryte
 isHidden :: FilePath -> Bool
 isHidden ('.' : _) = True
-isHidden _         = False
+isHidden _ = False
 
 -- | Vrati cast cesty po poslednej lomke = filename
 fileBase :: FilePath -> String
@@ -51,14 +50,14 @@ fileBase = reverse . takeWhile (/= '/') . reverse
 -- | Vrati priponu suboru s bodkou
 fileExt :: FilePath -> String
 fileExt path =
-  let name           = fileBase path
+  let name = fileBase path
       -- Reverse lebo sa hlada posledna bodka
       (extRev, rest) = break (== '.') (reverse name)
    in case rest of
         -- Bodka existuje a je nieco pred nou = pripona
         '.' : beforeDot | not (null beforeDot) -> '.' : reverse extRev
         -- Inak ziadna pripona
-        _                                      -> ""
+        _ -> ""
 
 -- | Build a 'TestCaseFile' for a given @.test@ file path, checking for
 -- companion @.in@ and @.out@ files in the same directory.
